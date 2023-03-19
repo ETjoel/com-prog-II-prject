@@ -5,8 +5,10 @@ int MAX_ACTIVE_ITEMS = 100; // maximum number of Items that can be stroed.
 
 struct storeItems {
     string name, company, productID;
-    double size, price;
-    int amount;
+    int size;//unitsize 5 ltr or 150kg 
+    string type;//gram(g), liter(ltr), meter(m), pieces(pcs), not defined(nl)
+    double price;
+    int amount;//quantity of item, how many of item .
 };
 void getRecord(storeItems activeItems[], int amount);
 /*This funtion takes activeItems[] and active as its parameter
@@ -57,6 +59,13 @@ void isLow(storeItems activeItems[], int active);
 /*this fuction excutes as long as there is an Item which has 
  *it's quantity(amount) below 5 and tell user that the user has 'Low quantity Items'
  */
+string itemType(char c){
+    if(c == 'g') return "gm";
+    else if(c == 'l') return "ltr";
+    else if(c == 'm') return "m";
+    else if(c == 'p') return "pcs";
+    else return "nl";
+}
 int main(){
     storeItems activeItems[MAX_ACTIVE_ITEMS];
     int active = 0;
@@ -80,10 +89,10 @@ int main(){
             cin >> amount;
             if(amount > 0 && amount < (MAX_ACTIVE_ITEMS - active)) {
                 active = amount;
-                storeItems activeItems[amount];
-                getRecord(activeItems, amount);
+                storeItems getItems[amount];
+                getRecord(getItems, amount);
                 for (int i = 0; i < amount; i++) {
-                    activeItems[i] = activeItems[i];
+                    activeItems[i] = getItems[i];
                 }
             }
             else cout << "Invalid input\n";
@@ -119,26 +128,33 @@ int main(){
 }
 void getRecord(storeItems activeItems[], int amount){
     for(int i = 0; i < amount; i++){
-        cout << "Enter the name of the item : \n";
+        char choosetype;
+        cout << "Enter the name :\n";
         cin >> activeItems[i].name;
         cout << "Enter the price : \n";
         cin >> activeItems[i].price;
         cout << "Enter the size : \n";
         cin >> activeItems[i].size;
+        cout << "if the item is measured mass type 'g'\n" 
+                << "if item is measured length type 'm'\n"
+                <<"if item is measured volume type 'l'\n"
+                <<"if item is counted type 'p'\n"
+                <<"if the item does't have a known unit of measurement type 'n'"
+                << endl;
+        cin >> choosetype;
+        activeItems[i].type = itemType(choosetype);
         cout << "Enter the amount : \n";
         cin >> activeItems[i].amount;
         cout << "Enter the productID : \n";
         cin >> activeItems[i].productID;
-        //cout << "Enter the type : \n";
-        //cin >> activeItems[i].type;
         cout << "Enter the company : \n";
-        cin >> activeItems[i].company; 
+        cin >> activeItems[i].company;
     }
 }
 void report(storeItems activeItems[], int active){
     cout << setw(10) << left << "Items";
     cout << setw(10) << left << "price";
-    cout << setw(10) << left << "size";
+    cout << setw(10) << left << "unitsize";
     cout << setw(10) << left << "amount";
     cout << setw(10) << left << "productID";
     cout << setw(10) << left << "company";
@@ -147,7 +163,8 @@ void report(storeItems activeItems[], int active){
     {
         cout << setw(10) << left << activeItems[i].name;
         cout << setw(10) << left << activeItems[i].price;
-        cout << setw(10) << left << activeItems[i].size;
+        cout << setw(5) << left << activeItems[i].size;
+        cout << setw(5) << left << activeItems[i].type;
         cout << setw(10) << left << activeItems[i].amount;
         cout << setw(10) << left << activeItems[i].productID;
         cout << setw(10) << left << activeItems[i].company;
@@ -170,11 +187,20 @@ void addItem(storeItems activeItems[], int& active){
     cin >> name;
     index = searchItem(name, activeItems, active);
     if(index < 0){
+        char choosetype;
         activeItems[active].name = name;
         cout << "Enter the price : \n";
         cin >> activeItems[active].price;
         cout << "Enter the size : \n";
         cin >> activeItems[active].size;
+        cout << "if the item is measured mass type 'g'\n" 
+                << "if item is measured length type 'm'\n"
+                <<"if item is measured volume type 'l'\n"
+                <<"if item is counted type 'p'\n"
+                <<"if the item does't have a known unit of measurement type 'n'"
+                << endl;
+        cin >> choosetype;
+        activeItems[active].type = itemType(choosetype);
         cout << "Enter the amount : \n";
         cin >> activeItems[active].amount;
         cout << "Enter the productID : \n";
@@ -316,25 +342,27 @@ void isLow(storeItems activeItems[], int active){
             count++;
         }
     }
-    int lowIndex[count];
-    for(int i = 0; i < active; i++){
-        if(activeItems[i].amount < treshold){
-            lowIndex[i] = i;
+    if (count > 0) {
+        int lowIndex[count];
+        for (int i = 0; i < active; i++) {
+            if (activeItems[i].amount < treshold) {
+                lowIndex[i] = i;
+            }
         }
-    }
-    cout << setw(10) << right;
-    for(int i = 0; i < 30; i++){
-        cout << "-";
-    }
-    cout << endl;
-    cout << setw(30) << right << "Low Quantity Items" << endl;
-    cout << setw(10) << right;
-    for(int i = 0; i < 30; i++){
-        cout << "-";
-    }
-    cout << endl;
-    for(int i = 1; i <= count; i++){
-        cout << i << ". " << activeItems[lowIndex[i-1]].name
-             << "    Quantity " << activeItems[lowIndex[i-1]].amount << endl;
+        cout << setw(10) << right;
+        for (int i = 0; i < 30; i++) {
+            cout << "-";
+        }
+        cout << endl;
+        cout << setw(30) << right << "Low Quantity Items" << endl;
+        cout << setw(10) << right;
+        for (int i = 0; i < 30; i++) {
+            cout << "-";
+        }
+        cout << endl;
+        for (int i = 1; i <= count; i++) {
+            cout << i << ". " << activeItems[lowIndex[i - 1]].name
+                 << "    Quantity " << activeItems[lowIndex[i - 1]].amount << endl;
+        }
     }
 }
