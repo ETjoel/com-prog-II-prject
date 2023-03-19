@@ -1,21 +1,62 @@
 #include <iostream>
 #include <fstream>
 using namespace std;
-int MAX_ACTIVE_ITEMS = 100;
+int MAX_ACTIVE_ITEMS = 100; // maximum number of Items that can be stroed.
 
 struct storeItems {
     string name, company, productID;
     double size, price;
     int amount;
 };
-void getRecord(storeItems getItems[], int amount);
+void getRecord(storeItems activeItems[], int amount);
+/*This funtion takes activeItems[] and active as its parameter
+ * and it registers items from the user for the first time.
+ */
 void report(storeItems activeItems[], int active);
-void addItem(storeItems addItems[], int& active);
-int searchItem(string name, storeItems searchItem[], int active);
-void removeItem(storeItems removeItem[], int& active);
-void sellItem(storeItems removeItem[], int& active);
-void save(storeItems save[], int active, ofstream &out);
-void get_file(storeItems accept[],int &active, ifstream &in);
+/*This function takes activeItems[] and active as its parameter
+ * and displays the Items in the activeItems[][];
+ */ 
+void addItem(storeItems activeItems[], int& active);
+/*This function takes activeItems[] and active as its parameter and 
+ *It takes the name of Item to add. Then if the name of the item
+ *already exists by searching it through searchItem function it just increament
+ *activeItem[i].amount without creating new. 
+ *If it doesn't exist this function add it to activeItems[] array.
+ */
+int searchItem(string name, storeItems activeItems[], int active);
+/* This also activeItemss active(tem[] and active but in addition to that
+ *It also have a string 'name' parameter which holds the string to be 
+ *searched for.
+ *This functtion retun the index of Item in the activeItems[] if the Item 
+ * exists and returns -1 if the item doesn't exist.
+ */
+void removeItem(storeItems activeItems[], int& active);
+/*This finction also activeItemss activeItems[][] and active as its parameter.
+ *it removes Item from activeItems[]. It activeItemss a string value of the name 
+ *of item to be removed. then by searchItem function it access the index of 
+ *of item in activeItems[]. if index = -1 it means there is no element.
+ ** if index is greater than -1 then the funciton replaces the activeItem[i] by
+ *activeItem[i + 1]. i = index.
+ */
+void sellItem(storeItems activeItems[], int& active);
+/*Takes activeItems and active as parameter.
+ *askes user to type the name of item to be sold.(string name).
+ *the int index get the index of item from searchItem function.
+ *if index >= 0 or exists in activeItems then it decrease 
+ *the activeItems[index].amount by amount(quantity to be sold).
+ */
+void save(storeItems activeItems[], int active, ofstream &out);
+/*Saves items in the activeItems[] array to file called "proj1.txt"
+*/
+void get_file(storeItems activeItems[],int &active, ifstream &in);
+/*gets items from file called in to activeItems[] but to do that first
+ *determines the number of items by counting '\n'(int size) in the proj1.txt
+ *then add items to activeItems.
+ */
+void isLow(storeItems activeItems[], int active);
+/*this fuction excutes as long as there is an Item which has 
+ *it's quantity(amount) below 5 and tell user that the user has 'Low quantity Items'
+ */
 int main(){
     storeItems activeItems[MAX_ACTIVE_ITEMS];
     int active = 0;
@@ -39,10 +80,10 @@ int main(){
             cin >> amount;
             if(amount > 0 && amount < (MAX_ACTIVE_ITEMS - active)) {
                 active = amount;
-                storeItems getItems[amount];
-                getRecord(getItems, amount);
+                storeItems activeItems[amount];
+                getRecord(activeItems, amount);
                 for (int i = 0; i < amount; i++) {
-                    activeItems[i] = getItems[i];
+                    activeItems[i] = activeItems[i];
                 }
             }
             else cout << "Invalid input\n";
@@ -67,7 +108,8 @@ int main(){
             ifstream in("proj1.txt");
             get_file(activeItems, active, in);
         } 
-        else cout << "Invalid input!";
+        else cout << "Invalid input!\n";
+        isLow(activeItems, active);
         cout << endl;
         cout << "Do you want to continue with other operation?\n"
              << "press 'Y' or 'y' to do other operation other wise press any key\n";
@@ -75,22 +117,22 @@ int main(){
     } while (chooseToexit == 'Y' || chooseToexit == 'y');
     return 0;
 }
-void getRecord(storeItems getItems[], int amount){
+void getRecord(storeItems activeItems[], int amount){
     for(int i = 0; i < amount; i++){
         cout << "Enter the name of the item : \n";
-        cin >> getItems[i].name;
+        cin >> activeItems[i].name;
         cout << "Enter the price : \n";
-        cin >> getItems[i].price;
+        cin >> activeItems[i].price;
         cout << "Enter the size : \n";
-        cin >> getItems[i].size;
+        cin >> activeItems[i].size;
         cout << "Enter the amount : \n";
-        cin >> getItems[i].amount;
+        cin >> activeItems[i].amount;
         cout << "Enter the productID : \n";
-        cin >> getItems[i].productID;
+        cin >> activeItems[i].productID;
         //cout << "Enter the type : \n";
-        //cin >> getItems[i].type;
+        //cin >> activeItems[i].type;
         cout << "Enter the company : \n";
-        cin >> getItems[i].company; 
+        cin >> activeItems[i].company; 
     }
 }
 void report(storeItems activeItems[], int active){
@@ -112,51 +154,51 @@ void report(storeItems activeItems[], int active){
         cout << endl;
     }
 }
-int searchItem(string name, storeItems searchItem[], int active){
+int searchItem(string name, storeItems activeItems[], int active){
     int index = -1;
      for(int i = 0; i < active; i++){
-        if(searchItem[i].name == name){
+        if(activeItems[i].name == name){
             index = i;
         }
      }
     return index;
 }
-void addItem(storeItems getItems[], int& active){
+void addItem(storeItems activeItems[], int& active){
     string name;
     int index, add_amount;
     cout << "Enter the name of an Item\n";
     cin >> name;
-    index = searchItem(name, getItems, active);
+    index = searchItem(name, activeItems, active);
     if(index < 0){
-        getItems[active].name = name;
+        activeItems[active].name = name;
         cout << "Enter the price : \n";
-        cin >> getItems[active].price;
+        cin >> activeItems[active].price;
         cout << "Enter the size : \n";
-        cin >> getItems[active].size;
+        cin >> activeItems[active].size;
         cout << "Enter the amount : \n";
-        cin >> getItems[active].amount;
+        cin >> activeItems[active].amount;
         cout << "Enter the productID : \n";
-        cin >> getItems[active].productID;
+        cin >> activeItems[active].productID;
         cout << "Enter the company : \n";
-        cin >> getItems[active].company;
+        cin >> activeItems[active].company;
         active++;
     }
     else {
         cout << "The Item already exist. Enter amount you want to add\n";
         cin >> add_amount;
-        getItems[active].amount = getItems[active].amount + add_amount;
+        activeItems[active].amount = activeItems[active].amount + add_amount;
     }
 
 }
-void removeItem(storeItems removeItem[], int& active){
+void removeItem(storeItems activeItems[], int& active){
     string to_remove;
     int index;
     cout << "Which Item do you want to remove. Enter the name of Item.";
     cin >> to_remove;
-    index = searchItem(to_remove, removeItem, active);
+    index = searchItem(to_remove, activeItems, active);
     if(index >= 0){
         for(int i = index; i < active; i++){
-            removeItem[i] = removeItem[i + 1];
+            activeItems[i] = activeItems[i + 1];
         }
         active--;
     }
@@ -188,7 +230,7 @@ void sellItem(storeItems sellItem[], int& active){
                 cin >> confirm;
                 if(confirm == 'y' || confirm == 'Y'){
                     cout << amount << " of " << sellItem[index].name 
-                        << " is sold successfully :)";
+                        << " is sold successfully :)\n";
                     sellItem[index].amount -= amount;
                 }
             }
@@ -209,7 +251,7 @@ void sellItem(storeItems sellItem[], int& active){
                     if (confirm == 'y' || confirm == 'Y')
                     {
                         cout << sellItem[index].amount << " of " << sellItem[index].name
-                             << " is sold successfully :)";
+                             << " is sold successfully :)\n";
                         sellItem[index].amount -= sellItem[index].amount;
                     }
                 }
@@ -221,15 +263,15 @@ void sellItem(storeItems sellItem[], int& active){
         cin >> choose;
     }while(choose == 'y' || choose == 'Y');
 }
-void save(storeItems save[], int active, ofstream &out){
+void save(storeItems activeItems[], int active, ofstream &out){
     if(!out.fail()){
         for(int i = 0; i < active; i++){
-            out << setw(20) << left << save[i].name;
-            out << setw(20) << left << save[i].price;
-            out << setw(20) << left << save[i].size;
-            out << setw(20) << left << save[i].amount;
-            out << setw(20) << left << save[i].productID;
-            out << setw(20) << left << save[i].company;
+            out << setw(20) << left << activeItems[i].name;
+            out << setw(20) << left << activeItems[i].price;
+            out << setw(20) << left << activeItems[i].size;
+            out << setw(20) << left << activeItems[i].amount;
+            out << setw(20) << left << activeItems[i].productID;
+            out << setw(20) << left << activeItems[i].company;
             out << endl;
         }
     }
@@ -237,7 +279,7 @@ void save(storeItems save[], int active, ofstream &out){
         cout << "Saving failed!";
     }
 }
-void get_file(storeItems accept[],int &active, ifstream &in){
+void get_file(storeItems activeItems[],int &active, ifstream &in){
     char temp;
     int size = 0;
     int t = 0;
@@ -254,15 +296,45 @@ void get_file(storeItems accept[],int &active, ifstream &in){
         }
         in.close();
     }
-    else cout << "Reading Failed!";
+    else cout << "Reading Failed!\n";
     active = size;
     ifstream in2("proj1.txt");
     if (!in2.fail()) {
         for (int i = 0; i < size; i++) {
-            in2 >> accept[i].name >> accept[i].price >> accept[i].size 
-                >> accept[i].amount >> accept[i].productID >> accept[i].company;
+            in2 >> activeItems[i].name >> activeItems[i].price >> activeItems[i].size 
+                >> activeItems[i].amount >> activeItems[i].productID >> activeItems[i].company;
         }
         in2.close();
     }
     else cout << "Reading Failed!";
+}
+void isLow(storeItems activeItems[], int active){
+    int treshold = 5;
+    int count = 0;
+    for(int i = 0; i < active; i++){
+        if(activeItems[i].amount < treshold){
+            count++;
+        }
+    }
+    int lowIndex[count];
+    for(int i = 0; i < active; i++){
+        if(activeItems[i].amount < treshold){
+            lowIndex[i] = i;
+        }
+    }
+    cout << setw(10) << right;
+    for(int i = 0; i < 30; i++){
+        cout << "-";
+    }
+    cout << endl;
+    cout << setw(30) << right << "Low Quantity Items" << endl;
+    cout << setw(10) << right;
+    for(int i = 0; i < 30; i++){
+        cout << "-";
+    }
+    cout << endl;
+    for(int i = 1; i <= count; i++){
+        cout << i << ". " << activeItems[lowIndex[i-1]].name
+             << "    Quantity " << activeItems[lowIndex[i-1]].amount << endl;
+    }
 }
