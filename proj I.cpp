@@ -70,19 +70,21 @@ string itemType(char c){
 int main(){
     storeItems activeItems[MAX_ACTIVE_ITEMS];
     int active = 0;
-    char chooseToexit;
-    int chooseNum;
+    string chooseToexit;
+    string chooseNum;
     do
     {
-        cout << "1. Get a record of the items in the store\n"
-             << "2. Add items to the store\n"
-             << "3. Removing items from the store\n"
-             << "4. Sell a product\n"
-             << "5. Report the status of items in the store\n"
-             << "6. Save and update the status of the store\n"
-             << "7. Reload from previos excution\n";
+        cout << "1. Register new items in the inventory\n"
+             << "2. Add items to the inventory\n"
+             << "3. Removing items from the inventory.\n"
+             << "4. Sell a product.\n"
+             << "5. Display the current status of the inventory.\n"
+             << "6. View low stock items\n"
+             << "7. load the inventory data from a file\n"
+             << "8. save the inventory data to a file\n";
         cout << "What do you want to do? please type in the number\n";
         cin >> chooseNum;
+        if(isdigit(to_integer(chooseNum)));
         if (chooseNum == 1)
         {
             int amount;
@@ -111,15 +113,17 @@ int main(){
             report(activeItems, active);
         }
         else if (chooseNum == 6){
-            ofstream out("proj1.txt");
-            save(activeItems, active, out);
+            isLow(activeItems, active);
         }
         else if(chooseNum == 7){
             ifstream in("proj1.txt");
             get_file(activeItems, active, in);
+        }
+        else if(chooseNum == 8){
+            ofstream out("proj1.txt");
+            save(activeItems, active, out);
         } 
         else cout << "Invalid input!\n";
-        isLow(activeItems, active);
         cout << endl;
         cout << "Do you want to continue with other operation?\n"
              << "press 'Y' or 'y' to do other operation other wise press any key\n";
@@ -187,6 +191,7 @@ void addItem(storeItems activeItems[], int& active){
     cout << "Enter the name of an Item\n";
     cin >> name;
     index = searchItem(name, activeItems, active);
+    
     if(index < 0){
         char choosetype;
         activeItems[active].name = name;
@@ -224,6 +229,7 @@ void removeItem(storeItems activeItems[], int& active){
     cin >> to_remove;
     index = searchItem(to_remove, activeItems, active);
     if(index >= 0){
+        cout << activeItems[index].name << " have been successfully removed.\n";
         for(int i = index; i < active; i++){
             activeItems[i] = activeItems[i + 1];
         }
@@ -369,4 +375,5 @@ void isLow(storeItems activeItems[], int active){
                  << "    Quantity " << activeItems[t].amount << endl;
         }
     }
+    else cout << "There are no low stack items in the inventory\n";
 }
