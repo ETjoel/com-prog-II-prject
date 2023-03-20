@@ -1,11 +1,12 @@
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 using namespace std;
-int MAX_ACTIVE_ITEMS = 100; // maximum number of Items that can be stroed.
+const int MAX_ACTIVE_ITEMS = 100; // maximum number of Items that can be stroed.
 
 struct storeItems {
     string name, company, productID;
-    int size;//unitsize 5 ltr or 150kg 
+    double size;//unitsize 5 ltr or 150kg 
     string type;//gram(g), liter(ltr), meter(m), pieces(pcs), not defined(nl)
     double price;
     int amount;//quantity of item, how many of item .
@@ -133,7 +134,7 @@ void getRecord(storeItems activeItems[], int amount){
         cin >> activeItems[i].name;
         cout << "Enter the price : \n";
         cin >> activeItems[i].price;
-        cout << "Enter the size : \n";
+        cout << "Enter the unitsize : \n";
         cin >> activeItems[i].size;
         cout << "if the item is measured mass type 'g'\n" 
                 << "if item is measured length type 'm'\n"
@@ -143,7 +144,7 @@ void getRecord(storeItems activeItems[], int amount){
                 << endl;
         cin >> choosetype;
         activeItems[i].type = itemType(choosetype);
-        cout << "Enter the amount : \n";
+        cout << "How many " << activeItems[i].name << " are you storing : \n";
         cin >> activeItems[i].amount;
         cout << "Enter the productID : \n";
         cin >> activeItems[i].productID;
@@ -152,22 +153,22 @@ void getRecord(storeItems activeItems[], int amount){
     }
 }
 void report(storeItems activeItems[], int active){
-    cout << setw(10) << left << "Items";
-    cout << setw(10) << left << "price";
-    cout << setw(10) << left << "unitsize";
-    cout << setw(10) << left << "amount";
-    cout << setw(10) << left << "productID";
-    cout << setw(10) << left << "company";
+    cout << setw(15) << left << "Items";
+    cout << setw(15) << left << "price";
+    cout << setw(15) << left << "unitsize";
+    cout << setw(15) << left << "Quantity";
+    cout << setw(15) << left << "productID";
+    cout << setw(15) << left << "company";
     cout << endl;
     for (int i = 0; i < active; i++)
     {
-        cout << setw(10) << left << activeItems[i].name;
-        cout << setw(10) << left << activeItems[i].price;
+        cout << setw(15) << left << activeItems[i].name;
+        cout << setw(15) << left << activeItems[i].price;
         cout << setw(5) << left << activeItems[i].size;
-        cout << setw(5) << left << activeItems[i].type;
-        cout << setw(10) << left << activeItems[i].amount;
-        cout << setw(10) << left << activeItems[i].productID;
-        cout << setw(10) << left << activeItems[i].company;
+        cout << setw(10) << left << activeItems[i].type;
+        cout << setw(15) << left << activeItems[i].amount;
+        cout << setw(15) << left << activeItems[i].productID;
+        cout << setw(15) << left << activeItems[i].company;
         cout << endl;
     }
 }
@@ -201,7 +202,7 @@ void addItem(storeItems activeItems[], int& active){
                 << endl;
         cin >> choosetype;
         activeItems[active].type = itemType(choosetype);
-        cout << "Enter the amount : \n";
+        cout << "How many " << activeItems[active].name << " are you storing : \n";
         cin >> activeItems[active].amount;
         cout << "Enter the productID : \n";
         cin >> activeItems[active].productID;
@@ -219,7 +220,7 @@ void addItem(storeItems activeItems[], int& active){
 void removeItem(storeItems activeItems[], int& active){
     string to_remove;
     int index;
-    cout << "Which Item do you want to remove. Enter the name of Item.";
+    cout << "Which Item do you want to remove. Enter the name of Item.\n";
     cin >> to_remove;
     index = searchItem(to_remove, activeItems, active);
     if(index >= 0){
@@ -292,12 +293,13 @@ void sellItem(storeItems sellItem[], int& active){
 void save(storeItems activeItems[], int active, ofstream &out){
     if(!out.fail()){
         for(int i = 0; i < active; i++){
-            out << setw(20) << left << activeItems[i].name;
-            out << setw(20) << left << activeItems[i].price;
-            out << setw(20) << left << activeItems[i].size;
-            out << setw(20) << left << activeItems[i].amount;
-            out << setw(20) << left << activeItems[i].productID;
-            out << setw(20) << left << activeItems[i].company;
+            out << setw(10) << left << activeItems[i].name;
+            out << setw(10) << left << activeItems[i].price;
+            out << setw(5) << left << activeItems[i].size;
+            out << setw(5) << left << activeItems[i].type;
+            out << setw(10) << left << activeItems[i].amount;
+            out << setw(10) << left << activeItems[i].productID;
+            out << setw(10) << left << activeItems[i].company;
             out << endl;
         }
     }
@@ -328,7 +330,8 @@ void get_file(storeItems activeItems[],int &active, ifstream &in){
     if (!in2.fail()) {
         for (int i = 0; i < size; i++) {
             in2 >> activeItems[i].name >> activeItems[i].price >> activeItems[i].size 
-                >> activeItems[i].amount >> activeItems[i].productID >> activeItems[i].company;
+                >> activeItems[i].type >> activeItems[i].amount >> activeItems[i].productID 
+                >> activeItems[i].company;
         }
         in2.close();
     }
@@ -342,11 +345,11 @@ void isLow(storeItems activeItems[], int active){
             count++;
         }
     }
-    if (count > 0) {
+    if(count > 0){
         int lowIndex[count];
-        for (int i = 0; i < active; i++) {
+        for (int i = 0, j = 0; i < active; i++) {
             if (activeItems[i].amount < treshold) {
-                lowIndex[i] = i;
+                lowIndex[j++] = i;
             }
         }
         cout << setw(10) << right;
@@ -361,8 +364,9 @@ void isLow(storeItems activeItems[], int active){
         }
         cout << endl;
         for (int i = 1; i <= count; i++) {
-            cout << i << ". " << activeItems[lowIndex[i - 1]].name
-                 << "    Quantity " << activeItems[lowIndex[i - 1]].amount << endl;
+            int t = lowIndex[i - 1];
+            cout << i << ". " << activeItems[t].name
+                 << "    Quantity " << activeItems[t].amount << endl;
         }
     }
 }
