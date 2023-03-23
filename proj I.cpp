@@ -1,3 +1,5 @@
+//Group-4's - Store Management System Project
+
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -13,7 +15,7 @@ struct storeItems
     int amount; // quantity of item, how many of item .
 };
 void getRecord(storeItems activeItems[], int amount);
-/*This funtion takes activeItems[] and active as its parameter
+/*This funtion takes activeItems[] and amount as its parameter
  * and it registers items from the user for the first time.
  */
 void report(storeItems activeItems[], int active);
@@ -35,7 +37,7 @@ int searchItem(string name, storeItems activeItems[], int active);
  * exists and returns -1 if the item doesn't exist.
  */
 void removeItem(storeItems activeItems[], int &active);
-/*This finction also activeItemss activeItems[][] and active as its parameter.
+/*This finction also activeItemss activeItems[] and active as its parameter.
  *it removes Item from activeItems[]. It activeItemss a string value of the name
  *of item to be removed. then by searchItem function it access the index of
  *of item in activeItems[]. if index = -1 it means there is no element.
@@ -50,7 +52,9 @@ void sellItem(storeItems activeItems[], int &active);
  *the activeItems[index].amount by amount(quantity to be sold).
  */
 void save(storeItems activeItems[], int active, ofstream &out);
-/*Saves items in the activeItems[] array to file called "proj1.txt"
+/*This funtion takes activeItems[], active and ofstream object called
+ * out as its parameter
+ *Saves items in the activeItems[] array to file called "proj1.txt"
  */
 void get_file(storeItems activeItems[], int &active, ifstream &in);
 /*gets items from file called in to activeItems[] but to do that first
@@ -58,44 +62,19 @@ void get_file(storeItems activeItems[], int &active, ifstream &in);
  *then add items to activeItems.
  */
 void isLow(storeItems activeItems[], int active);
-/*this fuction excutes as long as there is an Item which has
+/*This function accepts activeItems[] and active as its parameter.
+ *this fuction excutes as long as there is an Item which has
  *it's quantity(amount) below 5 and tell user that the user has 'Low quantity Items'
  */
+void employeeInfo();
 void sort(storeItems activeItems[], int active, char c);
-void swap(storeItems activeItems[], int active);
-string itemType(char c)
-{
-    if (c == 'g')
-        return "gm";
-    else if (c == 'l')
-        return "ltr";
-    else if (c == 'm')
-        return "m";
-    else if (c == 'p')
-        return "pcs";
-    else
-        return "nl";
-}
-bool is_digit(string temp)
-{
-    bool b = true;
-    for (int i = 0; i < temp.length(); i++)
-    {
-        if (!isdigit(temp[i]))
-            b = false;
-    }
-    return b;
-}
-bool is_float(string temp)
-{
-    bool b = true;
-    for (int i = 0; i < temp.length(); i++)
-    {
-        if (!(isdigit(temp[i]) || temp[i] == '.'))
-            b = false;
-    }
-    return b;
-}
+void swap(storeItems &item1, storeItems &item2);
+string itemType(char c);
+bool is_digit(string temp);
+bool is_float(string temp);
+void display_invalid();
+void display_successful();
+void display_list();
 int main()
 {
     storeItems activeItems[MAX_ACTIVE_ITEMS];
@@ -106,12 +85,13 @@ int main()
     {
         cout << "1. Register new items in the inventory\n"
              << "2. Add items to the inventory\n"
-             << "3. Removing items from the inventory.\n"
-             << "4. Sell a product.\n"
-             << "5. Display the current status of the inventory.\n"
-             << "6. View low stock items\n"
-             << "7. load the inventory data from a file\n"
-             << "8. save the inventory data to a file\n";
+             << "3. Removing items from the inventory\n"
+             << "4. Search an Item\n"
+             << "5. Sell a product\n"
+             << "6. Display the current status of the inventory.\n"
+             << "7. View low stock items\n"
+             << "8. load the inventory data from a file\n"
+             << "9. save the inventory data to a file\n";
         cout << "What do you want to do? please type in the number\n";
         cin >> chooseNum;
         if (is_digit(chooseNum))
@@ -132,7 +112,14 @@ int main()
                         }
                     }
                     else
-                        cout << "Please enter a proper input\n";
+                    {
+                        display_invalid();
+                        cout << "Please enter a proper input\n\n";
+                        for (int i = 0; i < 50; i++)
+                            cout << "- ";
+                        cout << endl;
+                    }
+
                 } while (!(is_digit(amount) && (stoi(amount) > 0 && stoi(amount) <= MAX_ACTIVE_ITEMS)));
             }
             else if (stoi(chooseNum) == 2)
@@ -145,40 +132,72 @@ int main()
             }
             else if (stoi(chooseNum) == 4)
             {
-                sellItem(activeItems, active);
+                int index;
+                string name;
+                cout << "Enter the name of Item\n";
+                cin >> name;
+                index = searchItem(name, activeItems, active);
+                if (index >= 0)
+                {
+                    cout << setw(15) << left << activeItems[index].name;
+                    cout << setw(15) << left << activeItems[index].price;
+                    cout << setw(5) << left << activeItems[index].size;
+                    cout << setw(10) << left << activeItems[index].type;
+                    cout << setw(15) << left << activeItems[index].amount;
+                    cout << setw(15) << left << activeItems[index].productID;
+                    cout << setw(15) << left << activeItems[index].company;
+                    cout << endl;
+                }
+                else
+                    cout << "The item you are looking for is not in the Inventory\n";
             }
             else if (stoi(chooseNum) == 5)
             {
-                char sortType;
-                do{
-                   cout << "In what order do you want to get report.\n";
-                   cout << "For name order enter 'n', For Quantity order enter 'q'\n";
-                   cin >> sortType;
-                   if(!(sortType == 'n' || sortType == 'q'))
-                        cout << "please enter valid input";
-                }while(!(sortType == 'n' || sortType == 'q'));
-                sort(activeItems, active, sortType);
-                report(activeItems, active);
+                sellItem(activeItems, active);
             }
             else if (stoi(chooseNum) == 6)
             {
-                isLow(activeItems, active);
+                char sortType;
+                do
+                {
+                    cout << "In what order do you want to get report.\n";
+                    cout << "For name order enter 'n', For Quantity order enter 'q'\n";
+                    cin >> sortType;
+                    if (!(sortType == 'n' || sortType == 'q'))
+                    {
+                        display_invalid();
+                        cout << "Please enter a proper input\n\n";
+                        for (int i = 0; i < 50; i++)
+                            cout << "- ";
+                        cout << endl;
+                    }
+                } while (!(sortType == 'n' || sortType == 'q'));
+                sort(activeItems, active, sortType);
+                report(activeItems, active);
             }
             else if (stoi(chooseNum) == 7)
+            {
+                isLow(activeItems, active);
+            }
+            else if (stoi(chooseNum) == 8)
             {
                 ifstream in("proj1.txt");
                 get_file(activeItems, active, in);
             }
-            else if (stoi(chooseNum) == 8)
+            else if (stoi(chooseNum) == 9)
             {
                 ofstream out("proj1.txt");
                 save(activeItems, active, out);
             }
-            else
-                cout << "please enter from the given choice!\n";
         }
         else
-            cout << "Please input a valid input\n";
+        {
+            display_invalid();
+            cout << "Please enter a proper input\n\n";
+            for (int i = 0; i < 50; i++)
+                cout << "- ";
+            cout << endl;
+        }
         cout << endl;
         cout << "Do you want to continue with other operation?\n"
              << "press 'Y' or 'y' to do other operation other wise press any key\n";
@@ -198,19 +217,31 @@ void getRecord(storeItems activeItems[], int amount)
         {
             cout << "Enter the price : \n";
             cin >> s;
-            if (!is_float(s))
-                cout << "please enter a valid input";
-        } while (!is_float(s));
+            if (!(is_float(s) && (stod(s) > 0)))
+            {
+                display_invalid();
+                cout << "Please enter a proper input\n\n";
+                for (int i = 0; i < 50; i++)
+                    cout << "- ";
+                cout << endl;
+            }
+        } while (!(is_float(s) && (stod(s) > 0)));
         activeItems[i].price = stod(s);
         s.clear();
         do
         {
             cout << "Enter the unitsize : \n";
             cin >> s;
-            if (!is_digit(s))
-                cout << "Please enter the proper input\n";
-        } while (!is_digit(s));
-        activeItems[i].size = stoi(s);
+            if (!(is_float(s) && (stod(s) > 0)))
+            {
+                display_invalid();
+                cout << "Please enter a proper input\n\n";
+                for (int i = 0; i < 50; i++)
+                    cout << "- ";
+                cout << endl;
+            }
+        } while (!(is_float(s) && (stod(s) > 0)));
+        activeItems[i].size = stod(s);
         s.clear();
         do
         {
@@ -221,7 +252,13 @@ void getRecord(storeItems activeItems[], int amount)
                  << "if the item does't have a known unit of measurement type 'n'\n";
             cin >> choosetype;
             if (!(choosetype == 'g' || choosetype == 'm' || choosetype == 'l' || choosetype == 'p' || choosetype == 'n'))
-                cout << "please enter the proper input\n";
+            {
+                display_invalid();
+                cout << "Please enter a proper input\n\n";
+                for (int i = 0; i < 50; i++)
+                    cout << "- ";
+                cout << endl;
+            }
         } while (!(choosetype == 'g' || choosetype == 'm' || choosetype == 'l' || choosetype == 'p' || choosetype == 'n'));
         activeItems[i].type = itemType(choosetype);
         do
@@ -229,7 +266,13 @@ void getRecord(storeItems activeItems[], int amount)
             cout << "How many " << activeItems[i].name << " are you storing : \n";
             cin >> s;
             if (!is_digit(s))
-                cout << "please enter a proper input";
+            {
+                display_invalid();
+                cout << "Please enter a proper input\n\n";
+                for (int i = 0; i < 50; i++)
+                    cout << "- ";
+                cout << endl;
+            }
         } while (!is_digit(s));
         activeItems[i].amount = stoi(s);
         cout << "Enter the productID : \n";
@@ -237,9 +280,15 @@ void getRecord(storeItems activeItems[], int amount)
         cout << "Enter the company : \n";
         cin >> activeItems[i].company;
     }
+    display_successful();
+    cout << "You have successfuly registered " << amount << " Items\n\n";
+    for (int i = 0; i < 50; i++)
+        cout << "- ";
+    cout << endl;
 }
 void report(storeItems activeItems[], int active)
 {
+    display_list();
     cout << setw(15) << left << "Items";
     cout << setw(15) << left << "price";
     cout << setw(15) << left << "unitsize";
@@ -258,6 +307,10 @@ void report(storeItems activeItems[], int active)
         cout << setw(15) << left << activeItems[i].company;
         cout << endl;
     }
+    cout << endl;
+    for (int i = 0; i < 50; i++)
+        cout << "- ";
+    cout << endl;
 }
 int searchItem(string name, storeItems activeItems[], int active)
 {
@@ -288,18 +341,30 @@ void addItem(storeItems activeItems[], int &active)
         {
             cout << "Enter the price : \n";
             cin >> s;
-            if (!is_float(s))
-                cout << "please enter a valid input";
-        } while (!is_float(s));
+            if (!(is_float(s) && (stod(s) > 0)))
+            {
+                display_invalid();
+                cout << "Please enter a proper input\n\n";
+                for (int i = 0; i < 50; i++)
+                    cout << "- ";
+                cout << endl;
+            }
+        } while (!(is_float(s) && (stod(s) > 0)));
         activeItems[active].price = stod(s);
         s.clear();
         do
         {
             cout << "Enter the unitsize : \n";
             cin >> s;
-            if (!is_digit(s))
-                cout << "Please enter the proper input\n";
-        } while (!is_digit(s));
+            if (!(is_float(s) && (stod(s) > 0)))
+            {
+                display_invalid();
+                cout << "Please enter a proper input\n\n";
+                for (int i = 0; i < 50; i++)
+                    cout << "- ";
+                cout << endl;
+            }
+        } while (!(is_float(s) && (stod(s) > 0)));
         activeItems[active].size = stoi(s);
         s.clear();
         do
@@ -311,7 +376,13 @@ void addItem(storeItems activeItems[], int &active)
                  << "if the item does't have a known unit of measurement type 'n'\n";
             cin >> choosetype;
             if (!(choosetype == 'g' || choosetype == 'm' || choosetype == 'l' || choosetype == 'p' || choosetype == 'n'))
-                cout << "please enter the proper input\n";
+            {
+                display_invalid();
+                cout << "Please enter a proper input\n\n";
+                for (int i = 0; i < 50; i++)
+                    cout << "- ";
+                cout << endl;
+            }
         } while (!(choosetype == 'g' || choosetype == 'm' || choosetype == 'l' || choosetype == 'p' || choosetype == 'n'));
         activeItems[active].type = itemType(choosetype);
         do
@@ -319,7 +390,13 @@ void addItem(storeItems activeItems[], int &active)
             cout << "How many " << activeItems[active].name << " are you storing : \n";
             cin >> s;
             if (!is_digit(s))
-                cout << "please enter a proper input";
+            {
+                display_invalid();
+                cout << "Please enter a proper input\n\n";
+                for (int i = 0; i < 50; i++)
+                    cout << "- ";
+                cout << endl;
+            }
         } while (!is_digit(s));
         activeItems[active].amount = stoi(s);
         cout << "Enter the productID : \n";
@@ -327,32 +404,53 @@ void addItem(storeItems activeItems[], int &active)
         cout << "Enter the company : \n";
         cin >> activeItems[active].company;
         active++;
+        display_successful();
+        cout << "You have successfully added a new item\n\n";
+        for (int i = 0; i < 50; i++)
+            cout << "- ";
+        cout << endl;
     }
     else
     {
         cout << "The Item already exist. Enter quatity you want to add\n";
         cin >> add_amount;
+        display_successful();
+        cout << "You have successfully added " << add_amount
+             << activeItems[index].name << " to the store\n\n";
+        for (int i = 0; i < 50; i++)
+            cout << "- ";
+        cout << endl;
         activeItems[index].amount = activeItems[index].amount + add_amount;
     }
 }
 void removeItem(storeItems activeItems[], int &active)
 {
+    char choose;
     string to_remove;
     int index;
-    cout << "Which Item do you want to remove. Enter the name of Item.\n";
-    cin >> to_remove;
-    index = searchItem(to_remove, activeItems, active);
-    if (index >= 0)
+    do
     {
-        cout << activeItems[index].name << " have been successfully removed.\n";
-        for (int i = index; i < active; i++)
+        cout << "Which Item do you want to remove. Enter the name of Item.\n";
+        cin >> to_remove;
+        index = searchItem(to_remove, activeItems, active);
+        if (index >= 0)
         {
-            activeItems[i] = activeItems[i + 1];
+            display_successful();
+            cout << activeItems[index].name << " have been successfully removed.\n\n";
+            for (int i = index; i < active; i++)
+            {
+                activeItems[i] = activeItems[i + 1];
+            }
+            active--;
         }
-        active--;
-    }
-    else
-        cout << "The item you requested doesn't exist";
+        else
+            cout << "\nThe item you requested doesn't exist\n\n";
+        for (int i = 0; i < 50; i++)
+            cout << "- ";
+        cout << endl;
+        cout << "press 'y' or 'Y' to remove another Item\n";
+        cin >> choose;
+    } while (choose == 'y' || choose == 'Y');
 }
 void sellItem(storeItems sellItem[], int &active)
 {
@@ -375,7 +473,13 @@ void sellItem(storeItems sellItem[], int &active)
                      << " available. How many of them do you want to sell?\n";
                 cin >> amount;
                 if (!is_digit(amount))
-                    cout << "please enter a proper input";
+                {
+                    display_invalid();
+                    cout << "Please enter a proper input\n\n";
+                    for (int i = 0; i < 50; i++)
+                        cout << "- ";
+                    cout << endl;
+                }
             } while (!is_digit(amount));
             if (sellItem[index].amount == 0)
             {
@@ -390,8 +494,12 @@ void sellItem(storeItems sellItem[], int &active)
                 cin >> confirm;
                 if (confirm == 'y' || confirm == 'Y')
                 {
+                    display_successful();
                     cout << stoi(amount) << " of " << sellItem[index].name
-                         << " is sold successfully :)\n";
+                         << " is sold successfully :)\n\n";
+                    for (int i = 0; i < 50; i++)
+                        cout << "- ";
+                    cout << endl;
                     sellItem[index].amount -= stoi(amount);
                 }
             }
@@ -412,17 +520,31 @@ void sellItem(storeItems sellItem[], int &active)
                     cin >> confirm;
                     if (confirm == 'y' || confirm == 'Y')
                     {
+                        display_successful();
                         cout << sellItem[index].amount << " of " << sellItem[index].name
-                             << " is sold successfully :)\n";
+                             << " is sold successfully :)\n\n";
+                        for (int i = 0; i < 50; i++)
+                            cout << "- ";
+                        cout << endl;
                         sellItem[index].amount -= sellItem[index].amount;
                     }
                 }
             }
             else
-                cout << "Invalid input";
+            {
+                display_invalid();
+                for (int i = 0; i < 50; i++)
+                    cout << "- ";
+                cout << endl;
+            }
         }
         else
-            cout << "The Item you requested is not in the store registry\n";
+        {
+            cout << "\nThe Item you requested is not in the store registry\n\n";
+            for (int i = 0; i < 50; i++)
+                cout << "- ";
+            cout << endl;
+        }
         cout << "press 'y' or 'Y' to continue selling\n";
         cin >> choose;
     } while (choose == 'y' || choose == 'Y');
@@ -442,11 +564,18 @@ void save(storeItems activeItems[], int active, ofstream &out)
             out << setw(15) << left << activeItems[i].company;
             out << endl;
         }
-        cout << "Savint to the file is successfull\n";
+        display_successful();
+        cout << "\nSaving to the file is successfull\n\n";
+        for (int i = 0; i < 50; i++)
+            cout << "- ";
+        cout << endl;
     }
     else
     {
-        cout << "Saving failed!\n";
+        cout << "\nSaving failed!\n\n";
+        for (int i = 0; i < 50; i++)
+            cout << "- ";
+        cout << endl;
     }
     out.close();
 }
@@ -469,7 +598,10 @@ void get_file(storeItems activeItems[], int &active, ifstream &in)
         in.close();
     }
     else
-        cout << "Reading Failed!\n";
+        cout << "\nReading Failed!\n\n";
+    for (int i = 0; i < 50; i++)
+        cout << "- ";
+    cout << endl;
     active = size;
     ifstream in2("proj1.txt");
     if (!in2.fail())
@@ -479,10 +611,17 @@ void get_file(storeItems activeItems[], int &active, ifstream &in)
             in2 >> activeItems[i].name >> activeItems[i].price >> activeItems[i].size >> activeItems[i].type >> activeItems[i].amount >> activeItems[i].productID >> activeItems[i].company;
         }
         in2.close();
-        cout << "The item is successfully loaded\n";
+        display_successful();
+        cout << "\nThe item is successfully loaded\n\n";
+        for (int i = 0; i < 50; i++)
+            cout << "- ";
+        cout << endl;
     }
     else
-        cout << "Reading Failed!";
+        cout << "\nReading Failed!\n\n";
+    for (int i = 0; i < 50; i++)
+        cout << "- ";
+    cout << endl;
 }
 void isLow(storeItems activeItems[], int active)
 {
@@ -527,9 +666,16 @@ void isLow(storeItems activeItems[], int active)
         }
     }
     else
-        cout << "There are no low stack items in the inventory\n";
+        {
+        cout << "There are no low stack items in the inventory\n\n";
+        for (int i = 0; i < 50; i++)
+            cout << "- ";
+        cout << endl;
+    }
+
 }
-void swap(storeItems& item1, storeItems& item2){
+void swap(storeItems &item1, storeItems &item2)
+{
     storeItems temp = item1;
     item1 = item2;
     item2 = temp;
@@ -561,4 +707,87 @@ void sort(storeItems activeItems[], int active, char c)
             }
             swap(activeItems[least], activeItems[i]);
         }
+}
+string itemType(char c)
+{
+    if (c == 'g')
+        return "gm";
+    else if (c == 'l')
+        return "ltr";
+    else if (c == 'm')
+        return "m";
+    else if (c == 'p')
+        return "pcs";
+    else
+        return "nl";
+}
+bool is_digit(string temp)
+{
+    bool b = true;
+    for (int i = 0; i < temp.length(); i++)
+    {
+        if (!isdigit(temp[i]))
+            b = false;
+    }
+    return b;
+}
+bool is_float(string temp)
+{
+    bool b = true;
+    for (int i = 0; i < temp.length(); i++)
+    {
+        if (!(isdigit(temp[i]) || temp[i] == '.'))
+            b = false;
+    }
+    return b;
+}
+void display_invalid()
+{
+    cout << setw(28) << right;
+    for (int i = 0; i < 25; i++)
+    {
+        cout << ",";
+    }
+    cout << endl;
+
+    cout << setw(53) << right << "|   Invalid Input!!!    |\n";
+    cout << setw(28) << right;
+    for (int i = 0; i < 25; i++)
+    {
+        cout << "'";
+    }
+    cout << endl;
+}
+void display_successful()
+{
+    cout << setw(34) << right;
+    for (int i = 0; i < 18; i++)
+    {
+        cout << "*";
+    }
+    cout << endl;
+
+    cout << setw(53) << right << "*   successful!   *\n";
+    cout << setw(34) << right;
+    for (int i = 0; i < 18; i++)
+    {
+        cout << "*";
+    }
+    cout << endl;
+}
+void display_list(){
+    cout << setw(36) << right;
+    for (int i = 0; i < 17; i++)
+    {
+        cout << "*";
+    }
+    cout << endl;
+
+    cout << setw(53) << right << "* List of Items *\n";
+    cout << setw(36) << right;
+    for (int i = 0; i < 17; i++)
+    {
+        cout << "*";
+    }
+    cout << endl;
 }
